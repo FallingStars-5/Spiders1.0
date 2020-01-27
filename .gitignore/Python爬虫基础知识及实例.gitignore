@@ -1,0 +1,71 @@
+今天我要介绍的是基于Python3.x的爬虫设计基础，希望能给各位爬虫爱好者提供一些力所能及的帮助：
+一、先介绍一下爬虫开发环境：
+  1.安装python:
+    最新版本为python3.8.1，官方下载网址为https://www.python.org/downloads/release/python-381/
+  2.安装编译软件：
+    安装python时，自带代码编译软件IDLE，也可下载安装PyCharm等集成开发环境.
+  3.安装python的第三方库：
+    1）如果使用IDLE的开发环境，第三方库的安装如下：
+      ·以管理员身份打开命令提示符cmd，输入:pip install 库名 ，即可安装相应第三方库,比如：
+              pip install requests (安装requests库)
+              pip install re       (安装re库)
+    2）如果使用PyCharm的开发环境，则第三方库的安装方法为：网址https://www.cnblogs.com/xiaokuangnvhai/p/10904216.html
+    
+二、实现一个简单爬虫，主要由以下步骤：
+1.得到待爬取页面的网址（url）：
+  在浏览器地址栏copy即可
+2.获取页面的html:
+  使用requests库：
+  1）引入requests:
+      import requests
+  2)用gets函数爬取页面的html：
+      r = requests.get(url)
+      html.r.text
+  3)使用BeautifulSoup和正则表达式库re,获取html中有用的信息
+  
+三、网络爬虫应遵守的协议：robots协议.
+  robots协议规定了网站上的哪些资源是不允许爬虫获取的，如果违反了robots协议，将会有法律风险。
+  大多数网站都有一个robots.txt,其中disallow部分是不允许网络爬虫爬取的。
+  比如Baidu:该网址可打开百度的robots协议：http://www.baidu.com/robots.txt，其他网址也可用类似方法打开。
+
+四、几个简单爬虫实例：
+实例一：Baidu网页的爬取程序
+完整代码如下：
+import requests #引入requests库
+def getHTMLText(url):
+    try:
+        kv = {'user-agent':'Mozilla/5.0'}#浏览器身份标识链接
+        r = requests.get(url,headers=kv,timeout=30) #timeout为超时时间30秒
+        r.raise_for_status() #如果状态不是200，引发HTTPError异常
+        r.encoding=r.apparent_encoding 
+        return r.text
+    except:
+        return "产生异常"
+if __name__ == "__main__":
+    #url="http://www.baidu.com/robots.txt"
+    #robots协议
+    url = "https://www.baidu.com/"
+    print (getHTMLText(url))  
+
+实例二：查询电话号码归属地爬虫程序
+完整代码如下：
+import requests
+import re
+from bs4 import BeautifulSoup
+def getIp(tel):
+    url = "http://m.ip138.com/mobile.asp?mobile="
+    try:
+        r = requests.get(url+tel)
+        r.raise_for_status()  #状态码为200，表示连接成功，否则失败
+        r.encoding = r.apparent_encoding
+        return r.text
+    except:
+        return ("爬取失败！")
+if __name__ == "__main__":
+    tel = input(u'请输入要查询的电话号码：')
+    #print (getIp(tel))
+    print ("查找结果如下：")
+    soup = BeautifulSoup(getIp(tel), "html.parser")
+    a = soup.find('table')
+    for k in a.find_all('td'):
+        print (k.string)
